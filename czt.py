@@ -53,7 +53,7 @@ def czt(x, M=None, W=None, A=1.0, t_method="ce"):
     k = np.arange(M)
     c = W ** (-(k ** 2) / 2)
     if t_method.lower() == "ce":
-        X = _toeplitz_mult_ce(r, c, x)
+        X = _toeplitz_mult_ce(r, c, X)
     elif t_method.lower() == "pd":
         X = _toeplitz_mult_pd(r, c, X)
     elif t_method.lower() == "mm":
