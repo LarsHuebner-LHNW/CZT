@@ -44,6 +44,10 @@ def czt(x, M=None, W=None, A=1.0, simple=False, t_method="ce"):
     if W is None:
         W = np.exp(-2j * np.pi / M)
 
+    # bugfix for A or W is an int (int**-np.array(dtype=int) raises an ValueError)
+    A = complex(A)
+    W = complex(W)
+
     if simple:
         k = np.arange(M)
         X = np.zeros(M, dtype=complex)
