@@ -89,9 +89,7 @@ def test_compare_different_czt_methods(debug=False):
     x = model(t)
 
     # Calculate CZT using different methods
-    X_czt2 = czt.czt(x, t_method="ce")
-    X_czt3 = czt.czt(x, t_method="pd")
-    X_czt4 = czt.czt(x, t_method="mm")
+    X_czt2 = czt.czt(x)
 
     # Plot for debugging purposes
     if debug:
@@ -99,21 +97,11 @@ def test_compare_different_czt_methods(debug=False):
 
         plt.figure()
         plt.plot(np.abs(X_czt2))
-        plt.plot(np.abs(X_czt3))
-        plt.plot(np.abs(X_czt4))
         plt.figure()
         plt.plot(X_czt2.real)
-        plt.plot(X_czt3.real)
-        plt.plot(X_czt4.real)
         plt.figure()
         plt.plot(X_czt2.imag)
-        plt.plot(X_czt3.imag)
-        plt.plot(X_czt4.imag)
         plt.show()
-
-    # Compare Toeplitz matrix multiplication methods
-    np.testing.assert_almost_equal(X_czt2, X_czt3, decimal=12)
-    np.testing.assert_almost_equal(X_czt2, X_czt4, decimal=12)
 
 
 def test_compare_czt_fft_dft(debug=False):
