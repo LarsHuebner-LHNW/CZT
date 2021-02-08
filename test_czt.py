@@ -13,57 +13,46 @@ import czt
 
 def test_compare_different_czt_methods(debug=False):
     """Compare different CZT calculation methods."""
-    
+
     # Create time-domain data
     t = np.arange(0, 20e-3, 1e-4)
-    dt = t[1] - t[0]
-    Fs = 1 / dt
-    N = len(t)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x = model(t)
 
     # Calculate CZT using different methods
     X_czt1 = czt.czt(x, simple=True)
-    X_czt2 = czt.czt(x, t_method='ce')
-    X_czt3 = czt.czt(x, t_method='pd')
-    X_czt4 = czt.czt(x, t_method='mm')
-    X_czt5 = czt.czt(x, t_method='ce', f_method='fast')
-    X_czt6 = czt.czt(x, t_method='pd', f_method='fast')
-    X_czt7 = czt.czt(x, t_method='mm', f_method='fast')
+    X_czt2 = czt.czt(x, t_method="ce")
+    X_czt3 = czt.czt(x, t_method="pd")
+    X_czt4 = czt.czt(x, t_method="mm")
 
     # Plot for debugging purposes
     if debug:
-        import matplotlib.pyplot as plt 
+        import matplotlib.pyplot as plt
+
         plt.figure()
         plt.plot(np.abs(X_czt1))
         plt.plot(np.abs(X_czt2))
         plt.plot(np.abs(X_czt3))
         plt.plot(np.abs(X_czt4))
-        plt.plot(np.abs(X_czt5))
-        plt.plot(np.abs(X_czt6))
-        plt.plot(np.abs(X_czt7))
         plt.figure()
         plt.plot(X_czt1.real)
         plt.plot(X_czt2.real)
         plt.plot(X_czt3.real)
         plt.plot(X_czt4.real)
-        plt.plot(X_czt5.real)
-        plt.plot(X_czt6.real)
-        plt.plot(X_czt7.real)
         plt.figure()
         plt.plot(X_czt1.imag)
         plt.plot(X_czt2.imag)
         plt.plot(X_czt3.imag)
         plt.plot(X_czt4.imag)
-        plt.plot(X_czt5.imag)
-        plt.plot(X_czt6.imag)
-        plt.plot(X_czt7.imag)
         plt.show()
 
     # Compare Toeplitz matrix multiplication methods
@@ -71,27 +60,22 @@ def test_compare_different_czt_methods(debug=False):
     np.testing.assert_almost_equal(X_czt1, X_czt3, decimal=12)
     np.testing.assert_almost_equal(X_czt1, X_czt4, decimal=12)
 
-    # Compare FFT methods
-    np.testing.assert_allclose(X_czt1, X_czt5, atol=0.1)
-    np.testing.assert_allclose(X_czt1, X_czt6, atol=0.1)
-    np.testing.assert_allclose(X_czt1, X_czt7, atol=0.1)
-
 
 def test_compare_czt_fft_dft(debug=False):
     """Compare CZT, FFT and DFT."""
-    
+
     # Create time-domain data
     t = np.arange(0, 20e-3 + 1e-10, 1e-4)
-    dt = t[1] - t[0]
-    Fs = 1 / dt
-    N = len(t)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x = model(t)
 
     # CZT (defaults to FFT)
@@ -105,24 +89,25 @@ def test_compare_czt_fft_dft(debug=False):
 
     # Plot for debugging purposes
     if debug:
-        import matplotlib.pyplot as plt 
+        import matplotlib.pyplot as plt
+
         plt.figure(figsize=(10, 8))
         plt.title("Absolute")
-        plt.plot(np.abs(X_czt), label='CZT')
-        plt.plot(np.abs(X_fft), label='FFT', ls='--')
-        plt.plot(np.abs(X_dft), label='DFT', ls='--')
+        plt.plot(np.abs(X_czt), label="CZT")
+        plt.plot(np.abs(X_fft), label="FFT", ls="--")
+        plt.plot(np.abs(X_dft), label="DFT", ls="--")
         plt.legend()
         plt.figure(figsize=(10, 8))
         plt.title("Real")
-        plt.plot(X_czt.real, label='CZT')
-        plt.plot(X_fft.real, label='FFT', ls='--')
-        plt.plot(X_dft.real, label='DFT', ls='--')
+        plt.plot(X_czt.real, label="CZT")
+        plt.plot(X_fft.real, label="FFT", ls="--")
+        plt.plot(X_dft.real, label="DFT", ls="--")
         plt.legend()
         plt.figure(figsize=(10, 8))
         plt.title("Imaginary")
-        plt.plot(X_czt.imag, label='CZT')
-        plt.plot(X_fft.imag, label='FFT', ls='--')
-        plt.plot(X_dft.imag, label='DFT', ls='--')
+        plt.plot(X_czt.imag, label="CZT")
+        plt.plot(X_fft.imag, label="FFT", ls="--")
+        plt.plot(X_dft.imag, label="DFT", ls="--")
         plt.legend()
         plt.show()
 
@@ -133,19 +118,19 @@ def test_compare_czt_fft_dft(debug=False):
 
 def test_czt_to_iczt(debug=False):
     """Test CZT -> ICZT."""
-    
+
     # Create time-domain data
     t = np.arange(0, 20e-3, 1e-4)
-    dt = t[1] - t[0]
-    Fs = 1 / dt
-    N = len(t)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x = model(t)
 
     # CZT (defaults to FFT)
@@ -156,7 +141,8 @@ def test_czt_to_iczt(debug=False):
 
     # Plot for debugging purposes
     if debug:
-        import matplotlib.pyplot as plt 
+        import matplotlib.pyplot as plt
+
         plt.figure()
         plt.plot(x.real)
         plt.plot(x_iczt.real)
@@ -171,19 +157,19 @@ def test_czt_to_iczt(debug=False):
 
 def test_time_to_freq_to_time(debug=False):
     """Test time -> frequency -> time domain conversions."""
-    
+
     # Create time-domain data
     t1 = np.arange(0, 20e-3, 1e-4)
-    dt = t1[1] - t1[0]
-    Fs = 1 / dt
-    N = len(t1)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x1 = model(t1)
 
     # Frequency domain
@@ -194,21 +180,22 @@ def test_time_to_freq_to_time(debug=False):
 
     # Plot for debugging purposes
     if debug:
-        import matplotlib.pyplot as plt 
+        import matplotlib.pyplot as plt
+
         plt.figure()
         plt.title("Absolute")
-        plt.plot(t1, np.abs(x1), label='Original')
-        plt.plot(t2, np.abs(x2), label='Recovered', ls='--')
+        plt.plot(t1, np.abs(x1), label="Original")
+        plt.plot(t2, np.abs(x2), label="Recovered", ls="--")
         plt.legend()
         plt.figure()
         plt.title("Real")
-        plt.plot(t1, x1.real, label='Original')
-        plt.plot(t2, x2.real, label='Recovered', ls='--')
+        plt.plot(t1, x1.real, label="Original")
+        plt.plot(t2, x2.real, label="Recovered", ls="--")
         plt.legend()
         plt.figure()
         plt.title("Imaginary")
-        plt.plot(t1, x1.imag, label='Original')
-        plt.plot(t2, x2.imag, label='Recovered', ls='--')
+        plt.plot(t1, x1.imag, label="Original")
+        plt.plot(t2, x2.imag, label="Recovered", ls="--")
         plt.legend()
         plt.show()
 
@@ -218,19 +205,19 @@ def test_time_to_freq_to_time(debug=False):
 
 def test_compare_iczt_idft(debug=False):
     """Compare ICZT to IDFT."""
-    
+
     # Create time-domain data
     t = np.arange(0, 20e-3, 1e-4)
-    dt = t[1] - t[0]
-    Fs = 1 / dt
-    N = len(t)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x = model(t)
 
     # Frequency domain using CZT
@@ -244,16 +231,17 @@ def test_compare_iczt_idft(debug=False):
 
     # Plot for debugging purposes
     if debug:
-        import matplotlib.pyplot as plt 
+        import matplotlib.pyplot as plt
+
         plt.figure()
-        plt.plot(t, x.real, 'k', label="Original")
-        plt.plot(t, x_iczt.real, 'g:', label="ICZT")
-        plt.plot(t, x_idft.real, 'r--', label="IDFT")
+        plt.plot(t, x.real, "k", label="Original")
+        plt.plot(t, x_iczt.real, "g:", label="ICZT")
+        plt.plot(t, x_idft.real, "r--", label="IDFT")
         plt.legend()
         plt.figure()
-        plt.plot(t, x.imag, 'k', label="Original")
-        plt.plot(t, x_iczt.imag, 'g:', label="ICZT")
-        plt.plot(t, x_idft.imag, 'r--', label="IDFT")
+        plt.plot(t, x.imag, "k", label="Original")
+        plt.plot(t, x_iczt.imag, "g:", label="ICZT")
+        plt.plot(t, x_idft.imag, "r--", label="IDFT")
         plt.legend()
         plt.show()
 
@@ -263,24 +251,24 @@ def test_compare_iczt_idft(debug=False):
 
 def test_frequency_zoom(debug=False):
     """Test frequency zoom."""
-    
+
     # Create time-domain data
     t = np.arange(0, 20e-3 + 1e-10, 1e-4)
-    dt = t[1] - t[0]
-    Fs = 1 / dt
-    N = len(t)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x = model(t)
 
     # CZT
     f_czt1, X_czt1 = czt.time2freq(t, x)
-    
+
     # DFT
     f_dft1, X_dft1 = czt.dft(t, x)
 
@@ -288,16 +276,17 @@ def test_frequency_zoom(debug=False):
     idx1, idx2 = 110, 180
     f_czt1, X_czt1 = f_czt1[idx1:idx2], X_czt1[idx1:idx2]
     f_dft1, X_dft1 = f_dft1[idx1:idx2], X_dft1[idx1:idx2]
-    
+
     # Zoom CZT
     f_czt2, X_czt2 = czt.time2freq(t, x, f_czt1)
-    
+
     # Zoom DFT
     f_dft2, X_dft2 = czt.dft(t, x, f_dft1)
 
     # Plot for debugging purposes
     if debug:
-        import matplotlib.pyplot as plt 
+        import matplotlib.pyplot as plt
+
         plt.figure(figsize=(10, 8))
         plt.plot(f_czt1, np.abs(X_czt1))
         plt.plot(f_czt2, np.abs(X_czt2))
@@ -321,20 +310,20 @@ def test_compare_czt_to_analytic_expression(debug=False):
 
     # Create time-domain data
     t = np.arange(0, 50e-3 + 1e-10, 1e-5)
-    dt = t[1] - t[0]
-    Fs = 1 / dt
-    N = len(t)
 
     # Signal
     def model(t):
-        output = (1.0 * np.sin(2 * np.pi * 1e3 * t) + 
-                  0.3 * np.sin(2 * np.pi * 2e3 * t) + 
-                  0.1 * np.sin(2 * np.pi * 3e3 * t)) * np.exp(-1e3 * t)
+        output = (
+            1.0 * np.sin(2 * np.pi * 1e3 * t)
+            + 0.3 * np.sin(2 * np.pi * 2e3 * t)
+            + 0.1 * np.sin(2 * np.pi * 3e3 * t)
+        ) * np.exp(-1e3 * t)
         return output
+
     x = model(t)
 
     # CZT
-    f = np.arange(-20, 20+1e-10, 0.01) * 1e3
+    f = np.arange(-20, 20 + 1e-10, 0.01) * 1e3
     _, X_czt = czt.time2freq(t, x, f)
 
     # Build frequency domain signal
@@ -353,7 +342,7 @@ def test_compare_czt_to_analytic_expression(debug=False):
     X1[idx] = -0.1 / 2j
     X2 = 1 / (1e3 + 2j * np.pi * f)
     X = np.convolve(X1, X2)
-    X = X[len(X)//4:-len(X)//4+1]
+    X = X[len(X) // 4 : -len(X) // 4 + 1]
     X *= 2 * (f[1] - f[0]) * len(t)
 
     # Truncate
@@ -363,18 +352,19 @@ def test_compare_czt_to_analytic_expression(debug=False):
     # Plot for debugging purposes
     if debug:
         import matplotlib.pyplot as plt
+
         plt.figure()
         plt.title("Absolute")
-        plt.plot(f/1e3, np.abs(X_czt))
-        plt.plot(f/1e3, np.abs(X), 'r--')
+        plt.plot(f / 1e3, np.abs(X_czt))
+        plt.plot(f / 1e3, np.abs(X), "r--")
         plt.figure()
         plt.title("Real")
-        plt.plot(f/1e3, X_czt.real)
-        plt.plot(f/1e3, X.real, 'r--')
+        plt.plot(f / 1e3, X_czt.real)
+        plt.plot(f / 1e3, X.real, "r--")
         plt.figure()
         plt.title("Imaginary")
-        plt.plot(f/1e3, X_czt.imag)
-        plt.plot(f/1e3, X.imag, 'r--')
+        plt.plot(f / 1e3, X_czt.imag)
+        plt.plot(f / 1e3, X.imag, "r--")
         plt.show()
 
     # Compare
