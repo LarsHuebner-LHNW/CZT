@@ -57,7 +57,7 @@ def czt(x, M=None, W=None, A=1.0, t_method="ce"):
     elif t_method.lower() == "pd":
         X = _toeplitz_mult_pd(r, c, X)
     elif t_method.lower() == "mm":
-        X = np.matmul(toeplitz(r, c), X)
+        X = np.matmul(toeplitz(c, r), X)
     else:
         print("t_method not recognized.")
         raise ValueError
