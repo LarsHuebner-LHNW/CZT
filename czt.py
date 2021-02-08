@@ -93,64 +93,6 @@ def iczt(X, N=None, W=None, A=1.0, t_method="ce"):
     return np.conj(czt(np.conj(X), M=N, W=W, A=A, t_method=t_method)) / M
 
 
-# OTHER TRANSFORMS -----------------------------------------------------------
-
-
-def dft(t, x, f=None):
-    """Convert signal from time-domain to frequency-domain using a Discrete
-    Fourier Transform (DFT).
-
-    Args:
-        t (np.ndarray): time
-        x (np.ndarray): time-domain signal
-        f (np.ndarray): frequency for output signal
-
-    Returns:
-        np.ndarray: frequency-domain signal
-
-    """
-
-    if f is None:
-        dt = t[1] - t[0]  # time step
-        Fs = 1 / dt  # sample frequency
-        f = np.linspace(-Fs / 2, Fs / 2, len(t))
-
-    X = np.zeros(len(f), dtype=complex)
-    for k in range(len(X)):
-        X[k] = np.sum(x * np.exp(-2j * np.pi * f[k] * t))
-
-    return f, X
-
-
-def idft(f, X, t=None):
-    """Convert signal from time-domain to frequency-domain using an Inverse
-    Discrete Fourier Transform (IDFT).
-
-    Args:
-        f (np.ndarray): frequency
-        X (np.ndarray): frequency-domain signal
-        t (np.ndarray): time for output signal
-
-    Returns:
-        np.ndarray: time-domain signal
-
-    """
-
-    if t is None:
-        bw = f.max() - f.min()
-        t = np.linspace(0, bw / 2, len(f))
-
-    N = len(t)
-    x = np.zeros(N, dtype=complex)
-    for n in range(len(x)):
-        x[n] = np.sum(X * np.exp(2j * np.pi * f * t[n]))
-        # for k in range(len(X)):
-        #     x[n] += X[k] * np.exp(2j * np.pi * f[k] * t[n])
-    x /= N
-
-    return t, x
-
-
 # FREQ <--> TIME-DOMAIN CONVERSION -------------------------------------------
 
 

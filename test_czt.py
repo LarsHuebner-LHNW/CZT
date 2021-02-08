@@ -10,6 +10,66 @@ import numpy as np
 
 import czt
 
+# DFT for comparison
+
+
+def dft(t, x, f=None):
+    """Convert signal from time-domain to frequency-domain using a Discrete
+    Fourier Transform (DFT).
+
+    Args:
+        t (np.ndarray): time
+        x (np.ndarray): time-domain signal
+        f (np.ndarray): frequency for output signal
+
+    Returns:
+        np.ndarray: frequency-domain signal
+
+    """
+
+    if f is None:
+        dt = t[1] - t[0]  # time step
+        Fs = 1 / dt  # sample frequency
+        f = np.linspace(-Fs / 2, Fs / 2, len(t))
+
+    X = np.zeros(len(f), dtype=complex)
+    for k in range(len(X)):
+        X[k] = np.sum(x * np.exp(-2j * np.pi * f[k] * t))
+
+    return f, X
+
+
+def idft(f, X, t=None):
+    """Convert signal from time-domain to frequency-domain using an Inverse
+    Discrete Fourier Transform (IDFT).
+
+    Args:
+        f (np.ndarray): frequency
+        X (np.ndarray): frequency-domain signal
+        t (np.ndarray): time for output signal
+
+    Returns:
+        np.ndarray: time-domain signal
+
+    """
+
+    if t is None:
+        bw = f.max() - f.min()
+        t = np.linspace(0, bw / 2, len(f))
+
+    N = len(t)
+    x = np.zeros(N, dtype=complex)
+    for n in range(len(x)):
+        x[n] = np.sum(X * np.exp(2j * np.pi * f * t[n]))
+        # for k in range(len(X)):
+        #     x[n] += X[k] * np.exp(2j * np.pi * f[k] * t[n])
+    x /= N
+
+    return t, x
+
+
+# actual tests following
+
 
 def test_compare_different_czt_methods(debug=False):
     """Compare different CZT calculation methods."""
@@ -29,7 +89,6 @@ def test_compare_different_czt_methods(debug=False):
     x = model(t)
 
     # Calculate CZT using different methods
-    X_czt1 = czt.czt(x, simple=True)
     X_czt2 = czt.czt(x, t_method="ce")
     X_czt3 = czt.czt(x, t_method="pd")
     X_czt4 = czt.czt(x, t_method="mm")
@@ -39,26 +98,22 @@ def test_compare_different_czt_methods(debug=False):
         import matplotlib.pyplot as plt
 
         plt.figure()
-        plt.plot(np.abs(X_czt1))
         plt.plot(np.abs(X_czt2))
         plt.plot(np.abs(X_czt3))
         plt.plot(np.abs(X_czt4))
         plt.figure()
-        plt.plot(X_czt1.real)
         plt.plot(X_czt2.real)
         plt.plot(X_czt3.real)
         plt.plot(X_czt4.real)
         plt.figure()
-        plt.plot(X_czt1.imag)
         plt.plot(X_czt2.imag)
         plt.plot(X_czt3.imag)
         plt.plot(X_czt4.imag)
         plt.show()
 
     # Compare Toeplitz matrix multiplication methods
-    np.testing.assert_almost_equal(X_czt1, X_czt2, decimal=12)
-    np.testing.assert_almost_equal(X_czt1, X_czt3, decimal=12)
-    np.testing.assert_almost_equal(X_czt1, X_czt4, decimal=12)
+    np.testing.assert_almost_equal(X_czt2, X_czt3, decimal=12)
+    np.testing.assert_almost_equal(X_czt2, X_czt4, decimal=12)
 
 
 def test_compare_czt_fft_dft(debug=False):
@@ -85,7 +140,7 @@ def test_compare_czt_fft_dft(debug=False):
     X_fft = np.fft.fftshift(np.fft.fft(x))
 
     # DFT
-    _, X_dft = czt.dft(t, x)
+    _, X_dft = dft(t, x)
 
     # Plot for debugging purposes
     if debug:
@@ -227,7 +282,7 @@ def test_compare_iczt_idft(debug=False):
     _, x_iczt = czt.freq2time(f, X, t)
 
     # Get time-domain using IDFT
-    _, x_idft = czt.idft(f, X, t)
+    _, x_idft = idft(f, X, t)
 
     # Plot for debugging purposes
     if debug:
@@ -270,7 +325,7 @@ def test_frequency_zoom(debug=False):
     f_czt1, X_czt1 = czt.time2freq(t, x)
 
     # DFT
-    f_dft1, X_dft1 = czt.dft(t, x)
+    f_dft1, X_dft1 = dft(t, x)
 
     # Truncate
     idx1, idx2 = 110, 180
@@ -281,7 +336,7 @@ def test_frequency_zoom(debug=False):
     f_czt2, X_czt2 = czt.time2freq(t, x, f_czt1)
 
     # Zoom DFT
-    f_dft2, X_dft2 = czt.dft(t, x, f_dft1)
+    f_dft2, X_dft2 = dft(t, x, f_dft1)
 
     # Plot for debugging purposes
     if debug:
