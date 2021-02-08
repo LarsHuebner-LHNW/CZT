@@ -9,14 +9,14 @@ Main reference:
 """
 
 import numpy as np
-from scipy.linalg import toeplitz
+from scipy.linalg import toeplitz, matmul_toeplitz
 from scipy.signal import kaiser
 
 
 # CZT TRANSFORM --------------------------------------------------------------
 
 
-def czt(x, M=None, W=None, A=1.0, t_method="ce"):
+def czt(x, M=None, W=None, A=1.0, t_method="scipy"):
     """Calculate Chirp Z-transform (CZT).
 
     Using an efficient algorithm. Solves in O(n log n) time.
@@ -28,9 +28,11 @@ def czt(x, M=None, W=None, A=1.0, t_method="ce"):
         M (int): length of output array
         W (complex): complex ratio between points
         A (complex): complex starting point
-        t_method (str): Toeplitz matrix multiplication method. 'ce' for
-            circulant embedding, 'pd' for Pustylnikov's decomposition, 'mm'
-            for simple matrix multiplication
+        t_method (str): Toeplitz matrix multiplication method.
+            'scipy' for matmul_toeplitz from scipy,
+            'ce' for circulant embedding,
+            'pd' for Pustylnikov's decomposition,
+            'mm' for simple matrix multiplication.
 
     Returns:
         np.ndarray: Chirp Z-transform
@@ -52,7 +54,9 @@ def czt(x, M=None, W=None, A=1.0, t_method="ce"):
     r = W ** (-(k ** 2) / 2)
     k = np.arange(M)
     c = W ** (-(k ** 2) / 2)
-    if t_method.lower() == "ce":
+    if t_method.lower() == "scipy":
+        X = matmul_toeplitz((c, r), X)
+    elif t_method.lower() == "ce":
         X = _toeplitz_mult_ce(r, c, X)
     elif t_method.lower() == "pd":
         X = _toeplitz_mult_pd(r, c, X)
@@ -67,7 +71,7 @@ def czt(x, M=None, W=None, A=1.0, t_method="ce"):
     return X
 
 
-def iczt(X, N=None, W=None, A=1.0, t_method="ce"):
+def iczt(X, N=None, W=None, A=1.0, t_method="scipy"):
     """Calculate inverse Chirp Z-transform (ICZT).
 
     Args:
@@ -75,9 +79,11 @@ def iczt(X, N=None, W=None, A=1.0, t_method="ce"):
         N (int): length of output array
         W (complex): complex ratio between points
         A (complex): complex starting point
-        t_method (str): Toeplitz matrix multiplication method. 'ce' for
-            circulant embedding, 'pd' for Pustylnikov's decomposition, 'mm'
-            for simple matrix multiplication
+        t_method (str): Toeplitz matrix multiplication method.
+            'scipy' for matmul_toeplitz from scipy,
+            'ce' for circulant embedding,
+            'pd' for Pustylnikov's decomposition,
+            'mm' for simple matrix multiplication.
 
     Returns:
         np.ndarray: Inverse Chirp Z-transform
