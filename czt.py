@@ -16,7 +16,7 @@ from scipy.signal import kaiser
 # CZT TRANSFORM --------------------------------------------------------------
 
 
-def czt(x, M=None, W=None, A=1.0, simple=False, t_method="ce"):
+def czt(x, M=None, W=None, A=1.0, t_method="ce"):
     """Calculate Chirp Z-transform (CZT).
 
     Using an efficient algorithm. Solves in O(n log n) time.
@@ -28,7 +28,6 @@ def czt(x, M=None, W=None, A=1.0, simple=False, t_method="ce"):
         M (int): length of output array
         W (complex): complex ratio between points
         A (complex): complex starting point
-        simple (bool): use simple algorithm?
         t_method (str): Toeplitz matrix multiplication method. 'ce' for
             circulant embedding, 'pd' for Pustylnikov's decomposition, 'mm'
             for simple matrix multiplication
@@ -47,14 +46,6 @@ def czt(x, M=None, W=None, A=1.0, simple=False, t_method="ce"):
     # bugfix for A or W is an int (int**-np.array(dtype=int) raises an ValueError)
     A = complex(A)
     W = complex(W)
-
-    if simple:
-        k = np.arange(M)
-        X = np.zeros(M, dtype=complex)
-        z = A * W ** -k
-        for n in range(N):
-            X += x[n] * z ** -n
-        return X
 
     k = np.arange(N)
     X = W ** (k ** 2 / 2) * A ** -k * x
