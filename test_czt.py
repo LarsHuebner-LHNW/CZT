@@ -8,7 +8,7 @@ To run:
 
 import numpy as np
 
-import czt
+import czt_L as czt
 
 # DFT for comparison
 

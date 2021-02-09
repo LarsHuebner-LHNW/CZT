@@ -37,9 +37,9 @@ class PyTest(TestCommand):
 
 
 setup(
-    name="czt",
-    version="0.0.2",
-    author="John Garrett",
+    name="czt_L",
+    version="0.0.3",
+    author="John Garrett, Lars Huebner",
     author_email="garrettj403@gmail.com",
     description="Chirp Z-transform implemented in Python",
     license="MIT",
@@ -49,7 +49,7 @@ setup(
         "signal-processing",
         "dsp",
     ],
-    py_modules=["czt"],
+    py_modules=["czt_L"],
     install_requires=[
         "numpy",
         "scipy>=1.6.0",

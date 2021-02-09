@@ -1,7 +1,7 @@
 Chirp Z-Transform (CZT)
 =======================
 
-[![PyPI version](https://badge.fury.io/py/czt.svg)](https://badge.fury.io/py/czt)
+[![Generic license badge](https://img.shields.io/badge/license-MIT-green.svg)](https://shields.io/)
 
 From [Wikipedia](https://en.wikipedia.org/wiki/Chirp_Z-transform):
 
