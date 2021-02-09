@@ -11,6 +11,8 @@ Main reference:
 import numpy as np
 from scipy.linalg import matmul_toeplitz
 from scipy.signal import kaiser
+from math import gcd
+from warnings import warn
 
 
 # CZT TRANSFORM --------------------------------------------------------------
@@ -77,6 +79,77 @@ def iczt(X, N=None, W=None, A=1.0):
         W = np.exp(-2j * np.pi / M)
 
     return np.conj(czt(np.conj(X), M=N, W=W, A=A)) / M
+
+
+# New FFTs with Fourier-Parameters
+# Similar to
+# https://reference.wolfram.com/language/ref/Fourier.html
+
+
+def fourier(x, FourierParameters=(1, -1), check_coprime=False):
+    """Calculate the Discrete Fourier transform of a list of complex numbers.
+
+    Similar to https://reference.wolfram.com/language/ref/Fourier.html
+
+    With FourierParameters = (a,b), this is equivalent to ::
+
+        X[k] = 1/N**((1-a)/2) = np.sum(x*np.exp(2j * np.pi * b * k * np.arange(N)/N))
+
+    The default FourierParameters = (1,-1) is equivalent to default scipy.fft.fft.
+
+    Args:
+        x (np.ndarray): input array
+        FourierParameters: List of length 2
+            Some common choices are
+                (1,-1) : default, signal processing
+                (0,1) : Mathematica
+                (-1,1) : data analysis
+
+    Returns:
+        np.ndarray: Discrete Fourier Transform with given FourierParameters.
+    """
+    a, b = FourierParameters
+    N = len(x)
+    if check_coprime:
+        try:
+            divisor = gcd(abs(b), N)
+            if divisor != 1:
+                warn(
+                    f"Array length N={N} and Fourier Parameter |b|={abs(b)} "
+                    f"are not coprime, but have common divisor {divisor}. "
+                    "Unique Inverse Fourier Transform cannot be ensured."
+                )
+        except TypeError:
+            warn("check_coprime only works for integer FourierParameters.")
+    W = np.exp(2.0j * np.pi * b / N)
+
+    return N ** (-(1.0 - a) / 2.0) * czt(x, W=W)
+
+
+def inverse_fourier(X, FourierParameters=(1, -1), check_coprime=False):
+    """Calculate the Discrete Inverse Fourier transform of a list of complex numbers.
+
+    Similar to https://reference.wolfram.com/language/ref/InverseFourier.html
+
+    With FourierParameters = (a,b), this is equivalent to ::
+
+        X[k] = 1/N**((1+a)/2) = np.sum(x*np.exp(2j * np.pi * b * k * np.arange(N)/N))
+
+    The default FourierParameters = (1,-1) is equivalent to default scipy.fft.fft.
+
+    Args:
+        X (np.ndarray): input array
+        FourierParameters: List of length 2
+            Some common choices are
+                (1,-1) : default, signal processing
+                (0,1) : Mathematica
+                (-1,1) : data analysis
+
+    Returns:
+        np.ndarray: Discrete Inverse Fourier Transform with given FourierParameters.
+    """
+    a, b = FourierParameters
+    return fourier(X, FourierParameters=(-a, -b), check_coprime=check_coprime)
 
 
 # FREQ <--> TIME-DOMAIN CONVERSION -------------------------------------------
