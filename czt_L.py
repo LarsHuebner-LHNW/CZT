@@ -165,7 +165,7 @@ def inverse_fourier(X, FourierParameters=(1, -1), check_coprime=False):
 # Continuous Fourier Transform approximation by DFT
 
 
-def acft(t, x, f=None):
+def acft(t, x, f=None, FourierParameters=(0, -2 * np.pi)):
     """Convert signal from time-domain to frequency-domain.
 
     Approximated Continuous Fourier Transformation from discrete time signal to
@@ -197,20 +197,22 @@ def acft(t, x, f=None):
 
     Nf = len(f)  # number of frequency points
 
+    a, b = FourierParameters
     # Step
-    W = np.exp(-2j * np.pi * dt * df)
+    W = np.exp(1j * b * dt * df)
 
     # Starting point
-    A = np.exp(2j * np.pi * f.min() * dt)
+    A = np.exp(-1j * b * f.min() * dt)
 
     # Frequency-domain transform
-    phase = dt * np.exp(-2j * np.pi * t[0] * f)
+    prefactor = dt * (abs(b) * (2 * np.pi) ** (a - 1.0)) ** 0.5
+    phase = np.exp(1j * b * t[0] * f)
     freq_data = czt(x, Nf, W, A)
 
-    return phase * freq_data
+    return prefactor * phase * freq_data
 
 
-def iacft(f, X, t=None):
+def iacft(f, X, t=None, FourierParameters=(0, -2 * np.pi)):
     """Convert signal from frequency-domain to time-domain.
 
     Approximated Continuous Inverse Fourier Transformation from discrete
@@ -225,7 +227,8 @@ def iacft(f, X, t=None):
     Returns:
         np.ndarray: Approximated Inverse Fourier Transform
     """
-    return np.conj(acft(f, np.conj(X), t))
+    a, b = FourierParameters
+    return acft(f, X, t, FourierParameters=(-a, -b))
 
 
 # FREQ <--> TIME-DOMAIN CONVERSION -------------------------------------------
