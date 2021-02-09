@@ -14,6 +14,16 @@ from scipy.signal import kaiser
 from math import gcd
 from warnings import warn
 
+__all__ = [
+    "czt",
+    "iczt",
+    "fourier",
+    "inverse_fourier",
+    "time2freq",
+    "freq2time",
+    "acft",
+    "iacft",
+]
 
 # CZT TRANSFORM --------------------------------------------------------------
 
@@ -150,6 +160,72 @@ def inverse_fourier(X, FourierParameters=(1, -1), check_coprime=False):
     """
     a, b = FourierParameters
     return fourier(X, FourierParameters=(-a, -b), check_coprime=check_coprime)
+
+
+# Continuous Fourier Transform approximation by DFT
+
+
+def acft(t, x, f=None):
+    """Convert signal from time-domain to frequency-domain.
+
+    Approximated Continuous Fourier Transformation from discrete time signal to
+    discrete frequncy signal.
+
+    Args:
+        t (np.ndarray): time
+        x (np.ndarray): time-domain signal
+        f (np.ndarray): frequency for output signal
+            If None, then numpy.fft.fftfreq(len(t),dt) will be used.
+
+    Returns:
+        np.ndarray: Approximated Fourier Transform
+    """
+    # calculate dt
+    dt = np.diff(t)
+    if np.all(dt == dt[0]):
+        raise ValueError("t has no constant time step.")
+    dt = dt[0]
+    # calculate df
+    if f is None:
+        f = np.fft.fftshift(np.fft.fftfreq(len(t), dt))
+        df = f[1] - f[0]
+    else:
+        df = np.diff(f)
+        if np.all(df == df[0]):
+            raise ValueError("f has no constant time step.")
+        df = df[0]
+
+    Nf = len(f)  # number of frequency points
+
+    # Step
+    W = np.exp(-2j * np.pi * dt * df)
+
+    # Starting point
+    A = np.exp(2j * np.pi * f.min() * dt)
+
+    # Frequency-domain transform
+    phase = dt * np.exp(-2j * np.pi * t[0] * f)
+    freq_data = czt(x, Nf, W, A)
+
+    return phase * freq_data
+
+
+def iacft(f, X, t=None):
+    """Convert signal from frequency-domain to time-domain.
+
+    Approximated Continuous Inverse Fourier Transformation from discrete
+    frequency signal to discrete time signal.
+
+    Args:
+        f (np.ndarray): frequency
+        X (np.ndarray): frequency-domain signal
+        t (np.ndarray): time for output signal
+            If None, then numpy.fft.fftfreq(len(t),dt) will be used.
+
+    Returns:
+        np.ndarray: Approximated Inverse Fourier Transform
+    """
+    return np.conj(acft(f, np.conj(X), t))
 
 
 # FREQ <--> TIME-DOMAIN CONVERSION -------------------------------------------
