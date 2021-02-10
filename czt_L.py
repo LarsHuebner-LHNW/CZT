@@ -81,14 +81,7 @@ def iczt(X, N=None, W=None, A=1.0):
         np.ndarray: Inverse Chirp Z-transform
 
     """
-
-    M = len(X)
-    if N is None:
-        N = M
-    if W is None:
-        W = np.exp(-2j * np.pi / M)
-
-    return np.conj(czt(np.conj(X), M=N, W=W, A=A)) / M
+    return np.conj(czt(np.conj(X), M=N, W=W, A=A)) / len(X)
 
 
 # New FFTs with Fourier-Parameters
