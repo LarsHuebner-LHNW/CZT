@@ -180,9 +180,15 @@ def acft(t, x, f=None, FourierParameters=(0, -2 * np.pi)):
     Returns:
         np.ndarray: Approximated Fourier Transform
     """
+    t = np.array(t, dtype=float)
+    x = np.array(x, dtype=complex)
+    if t.shape != x.shape:
+        raise ValueError(
+            f"t and x must have same shape, but have shapes {t.shape} and {x.shape}."
+        )
     # calculate dt
     dt = np.diff(t)
-    if np.all(dt == dt[0]):
+    if not np.allclose(dt, dt[0]):
         raise ValueError("t has no constant time step.")
     dt = dt[0]
     # calculate df
@@ -191,7 +197,7 @@ def acft(t, x, f=None, FourierParameters=(0, -2 * np.pi)):
         df = f[1] - f[0]
     else:
         df = np.diff(f)
-        if np.all(df == df[0]):
+        if not np.allclose(df, df[0]):
             raise ValueError("f has no constant time step.")
         df = df[0]
 
