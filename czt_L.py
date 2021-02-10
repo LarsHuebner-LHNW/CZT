@@ -103,7 +103,7 @@ def fourier(x, FourierParameters=(1, -1), check_coprime=False):
 
     With FourierParameters = (a,b), this is equivalent to ::
 
-        X[k] = 1/N**((1-a)/2) = np.sum(x*np.exp(2j * np.pi * b * k * np.arange(N)/N))
+        X[k] = 1/N**((1-a)/2) * np.sum(x*np.exp(2j * np.pi * b * k * np.arange(N)/N))
 
     The default FourierParameters = (1,-1) is equivalent to default scipy.fft.fft.
 
@@ -143,7 +143,7 @@ def inverse_fourier(X, FourierParameters=(1, -1), check_coprime=False):
 
     With FourierParameters = (a,b), this is equivalent to ::
 
-        X[k] = 1/N**((1+a)/2) = np.sum(x*np.exp(2j * np.pi * b * k * np.arange(N)/N))
+        x[n] = 1/N**((1+a)/2) * np.sum(X*np.exp(2j * np.pi * b * n * np.arange(N)/N))
 
     The default FourierParameters = (1,-1) is equivalent to default scipy.fft.fft.
 
@@ -157,6 +157,10 @@ def inverse_fourier(X, FourierParameters=(1, -1), check_coprime=False):
 
     Returns:
         np.ndarray: Discrete Inverse Fourier Transform with given FourierParameters.
+
+    Notes:
+        Equivalent to a call to fourier with FourierParameters=(-a,-b).
+        Error Messages relate to arguments of fourier.
     """
     a, b = FourierParameters
     return fourier(X, FourierParameters=(-a, -b), check_coprime=check_coprime)
@@ -171,11 +175,28 @@ def acft(t, x, f=None, FourierParameters=(0, -2 * np.pi)):
     Approximated Continuous Fourier Transformation from discrete time signal to
     discrete frequncy signal.
 
+    Similar to https://reference.wolfram.com/language/ref/FourierTransform.html
+    but with discrete input.
+
+    With FourierParameters = (a,b), this is (roughly) equivalent to ::
+
+        X[k] = np.sqrt(abs(b)/(2*np.pi)**(1-a)) * np.sum(x*np.exp(1j * b * f[k] * t)
+
+    The first and last entry of x are weighted with 1/2 to use trapezoidal rule,
+    which in some cases improves the result.
+
+    The default FourierParameters = (0,-2*np.pi) is for signal processing.
+
     Args:
         t (np.ndarray): time
         x (np.ndarray): time-domain signal
         f (np.ndarray): frequency for output signal
             If None, then numpy.fft.fftfreq(len(t),dt) will be used.
+        FourierParameters: List of length 2
+            Some common choices are
+                (0,-2*np.pi) : default, signal processing (unitary, ordinary frequency)
+                (0,1) : Mathematica, modern physics (unitary, angular frequency)
+                (-1,1) : classical physics (non-unitary, angular frequency)
 
     Returns:
         np.ndarray: Approximated Fourier Transform
@@ -231,14 +252,34 @@ def iacft(f, X, t=None, FourierParameters=(0, -2 * np.pi)):
     Approximated Continuous Inverse Fourier Transformation from discrete
     frequency signal to discrete time signal.
 
+    Similar to https://reference.wolfram.com/language/ref/InverseFourierTransform.html
+    but with discrete input.
+
+    With FourierParameters = (a,b), this is (roughly) equivalent to ::
+
+        x[n] = np.sqrt(abs(b)/(2*np.pi)**(1+a)) * np.sum(-x*np.exp(1j * b * f * t[n])
+
+    The first and last entry of x are weighted with 1/2 to use trapezoidal rule,
+    which in some cases improves the result.
+
+    The default FourierParameters = (0,-2*np.pi) is for signal processing.
     Args:
         f (np.ndarray): frequency
         X (np.ndarray): frequency-domain signal
         t (np.ndarray): time for output signal
             If None, then numpy.fft.fftfreq(len(t),dt) will be used.
+        FourierParameters: List of length 2
+            Some common choices are
+                (0,-2*np.pi) : default, signal processing (unitary, ordinary frequency)
+                (0,1) : Mathematica, modern physics (unitary, angular frequency)
+                (-1,1) : classical physics (non-unitary, angular frequency)
 
     Returns:
         np.ndarray: Approximated Inverse Fourier Transform
+
+    Notes:
+        Equivalent to a call to acft with FourierParameters=(-a,-b).
+        Error Messages relate to arguments of acft.
     """
     a, b = FourierParameters
     return acft(f, X, t, FourierParameters=(-a, -b))
