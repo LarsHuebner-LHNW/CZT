@@ -209,7 +209,14 @@ def acft(t, x, f=None, FourierParameters=(0, -2 * np.pi)):
     phase = np.exp(1j * b * t[0] * f)
     freq_data = czt(x, Nf, W, A)
 
-    return prefactor * phase * freq_data
+    # trapezoidal rule
+    I0 = (
+        -dt
+        / 2
+        * (x[0] * np.exp(1j * b * t[0] * f) + x[-1] * np.exp(1j * b * t[-1] * f))
+    )
+
+    return prefactor * (I0 + phase * freq_data)
 
 
 def iacft(f, X, t=None, FourierParameters=(0, -2 * np.pi)):
