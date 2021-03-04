@@ -311,6 +311,88 @@ def freq2time(f, X, t=None, t_orig=None):
 
     return t, time_data * phase / k
 
+def time2freq_new(t, x, f=None):
+    """Convert signal from time-domain to frequency-domain.
+
+    Args:
+        t (np.ndarray): time
+        x (np.ndarray): time-domain signal
+        f (np.ndarray): frequency for output signal
+        f_orig (np.ndarray): frequency sweep of the original signal, necessary
+            for normalization if the new frequency sweep is different from the
+            original
+
+    Returns:
+        np.ndarray: frequency-domain signal
+
+    """
+
+    # Input time array
+    dt = t[1] - t[0]  # time step
+
+    # Output frequency array
+    if f is None:
+        Nf = len(t)  # number of time points
+        f = np.fft.fftshift(np.fft.fftfreq(Nf, dt))
+    else:
+        Nf = len(f)
+        f = np.copy(f)
+    df = f[1]-f[0]
+
+    # Step
+    W = np.exp(-2j * np.pi * df * dt)
+
+    # Starting point
+    A = np.exp(2j * np.pi * f[0] * dt)
+
+    # phase
+    phase = np.exp(-2j*np.pi * t[0] * f)
+
+    # Frequency-domain transform
+    freq_data = czt(x, Nf, W, A)*phase
+
+    return f, freq_data
+
+
+def freq2time_new(f, X, t=None):
+    """Convert signal from frequency-domain to time-domain.
+
+    Args:
+        f (np.ndarray): frequency
+        X (np.ndarray): frequency-domain signal
+        t (np.ndarray): time for output signal
+        t_orig (np.ndarray): original time-domain time
+
+    Returns:
+        np.ndarray: time-domain signal
+
+    """
+
+    # Input frequency array
+    df = f[1] - f[0]  # time step
+
+    # Output time array
+    if t is None:
+        Nt = len(f)  # number of time points
+        t = np.fft.fftshift(np.fft.fftfreq(Nt, df))
+    else:
+        Nt = len(t)
+        t = np.copy(t)
+    dt = t[1]-t[0]
+
+    # Step
+    W = np.exp(2j * np.pi * dt * df)
+
+    # Starting point
+    A = np.exp(-2j * np.pi * t[0] * df)
+
+    # phase
+    phase = np.exp(2j*np.pi * f[0] * t)
+
+    # Frequency-domain transform
+    time_data = czt(X, Nt, W, A)*phase/len(f)
+
+    return t, time_data
 
 # HELPER FUNCTIONS -----------------------------------------------------------
 
